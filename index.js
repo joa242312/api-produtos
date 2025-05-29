@@ -1,45 +1,56 @@
 const express = require("express")
-const app =express()
+const app = express()
 const port = 6579
-const produtosDb = []
-const userDb =[]
+const { Pool } = require("pg")
+
+const pool = new Pool({
+    user: 'postgres.nvwruviltrndiaimeejc',
+    host: 'aws-0-us-east-2.pooler.supabase.com',
+    database: 'postgres',
+    password: "Jg162006@",
+    port: 5432
+
+})
 
 app.use(express.json())
-
-app.get("/", (req, res) =>{
-    res.send(" Olá Joao!")
-})
-app.post("/produtos", (req, res) => {
-    const {nome,preco, categoria} = req.body
-    
-    if (!nome || !preco || !categoria){
-        return res.status(400).send("nome,preco e categoria são obrigatorios ")
+app.post('/probutos', async (req, res) => {
+    const { nome, preco, categoria, image_url } = req.body
+    if (!nome || !preco || !categoria || !image_url) {
+        return res.status(400).send("todos os campos são obigatorios")
     }
-    const produtos ={
-        nome: nome,
-        preco: preco,
-        categoria:categoria
-    
+    if (nome.langeth > 100) {
+        return res.status(400).send('Nome pode tr no maximo 100 caracteres')
     }
-      produtosDb.push(produtos);
-      res.status(200).send(produtos)
-})
-app.get("/produtos", (req, res) => {
-    res.send(produtosDb)
-})
-
-app.post("/usuarios", (req, res) => {
-    const {nome,email, senha} = req.body
-
-    if (!nome || !email || !senha){
-        return res.status(400).send("email, nome e senha são obrigatorio")
+    if (categoria.langeth > 50) {
+        return res.status(400).send('Nome pode tr no maximo 100 caracteres')
     }
-    userDb.push({nome, email, senha})
-    res.send("deu certo")
-    
+    try {
+        const probuto = await pool.query(`
+INSERT INTO probutos(nome,preco,categoria,image_url)
+VALUES(
+'${nome}',
+'${preco}',
+'${categoria}',
+'${image_url}' 
+)
+RETURNING *
+`)
+        res.status(201).send(probuto.rows[0])
+    } catch (error) {
+        console.error(error)
+        return res.status(500).send("error  ao cadastrar o produtos")
+    }
+})
+app.get("/probutos", async (req,res) => {
+    try {
+        const probutos = await pool.query("SELECT * FROM probutos")
+        return res.status(200).send(probutos.rows)
+        } catch (error) { 
+        console.error(error)
+        return res.status(500).send("Error ao buscar probutos")
+    }
 })
 
- 
 app.listen(port, () => {
-console.log(`O sevirdor está roudado na ${port}`)
+    console.log(`O sevirdor está roudado na ${port}`)
 })
