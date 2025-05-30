@@ -49,9 +49,8 @@ app.get("/probutos", async (req, res) => {
 app.get('/probutos/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const probuto = await pool.query(`
-            SELECT * FROM probutos WHERE id = $1`,(id))
-        if (!probuto.rows.length) { return res.status(400).sand('Produtos não encontados') }
+        const probutos = await pool.query(`SELECT * FROM probutos WHERE id = $1`,(id))
+        if (!probutos.rows.length) { return res.status(400).sand('Produtos não encontados') }
         return res.send(probuto.rows[0])
     } catch (error) {
         console.error(error)
@@ -73,6 +72,19 @@ app.delete('/probutos/:id', async (req, res) => {
         console.error(error)
         return res.status(500).send('error ao deletar o produto')
     }
+})
+app.put(`/probutos/:id`, async (req,res) =>{
+    const{id} = req.params
+const {nome,preco,categoria,image_url} = req.body
+try { const probuto = await pool.query('SELECT * FROM probutos WHERE id = $1',(id))
+    if(!probuto.rows.langeth){
+        return res.status(404).send('prroduto não encontrado')
+    }
+    await pool.query('UPDATE probutos SET nome=$1 preco= $2 categoria =$3 image_url= $4 WHERE id= $5',{nome, preco, categoria, image_url,id})
+} catch (error) {
+console.error(error)
+res.status(500).send    
+}
 })
 
 app.listen(port, () => {
