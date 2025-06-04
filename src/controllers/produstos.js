@@ -16,13 +16,23 @@ async function createProdusto(req, res) {
         return res.status(201).send(probutos)
     } catch (error) {
         console.error(error)
-        return res.status
+        return res.status(500).send("error a criar produto")
     }
 
+}
+async function deleteProduto(req,res) {
+    const {id} =req.params;
+    try {
+        await produtosModel.deleteProduto(id)
+        return res.status(202).send('Produto deltado com sucesso')
+    } catch (error) {
+        return res.status(500).send('Error ao deletar o produto')
+    }
 }
 
 module.exports = {
     getProdutos,
-    createProdusto
+    createProdusto,
+    deleteProduto
 
 }
